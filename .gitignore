@@ -1,2 +1,9 @@
 tags
 .*.sw[nop]
+.DS_Store
+
+# API secrets
+.env
+
+# Large generated files
+github-data/data/reactions/pages/
