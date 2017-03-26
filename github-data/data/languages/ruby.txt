@@ -1,0 +1,10 @@
+fog/fog
+mbleigh/acts-as-taggable-on
+kneath/kss
+binarylogic/authlogic
+BBC-News/wraith
+bkeepers/dotenv
+rest-client/rest-client
+sferik/twitter
+mroth/lolcommits
+sj26/mailcatcher

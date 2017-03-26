@@ -1,0 +1,10 @@
+swagger-api/swagger-core
+rzwitserloot/lombok
+hotchemi/PermissionsDispatcher
+antoniolg/androidmvp
+scribejava/scribejava
+roboguice/roboguice
+lecho/hellocharts-android
+googlesamples/android-testing
+alibaba/atlas
+eclipse/che

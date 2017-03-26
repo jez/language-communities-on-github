@@ -1,0 +1,10 @@
+OpenRA/OpenRA
+hbons/SparkleShare
+ServiceStack/ServiceStack
+Microsoft/BotBuilder
+Redth/PushSharp
+icsharpcode/ILSpy
+MahApps/MahApps.Metro
+reactiveui/ReactiveUI
+Microsoft/msbuild
+opserver/Opserver

@@ -1,0 +1,10 @@
+nickoneill/PermissionScope
+stephencelis/SQLite.swift
+duemunk/Async
+ianyh/Amethyst
+uacaps/PageMenu
+raulriera/TextFieldEffects
+xmartlabs/XLPagerTabStrip
+vikmeup/SCLAlertView-Swift
+philackm/Scrollable-GraphView
+ankurp/Dollar

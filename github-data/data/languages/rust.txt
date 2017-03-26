@@ -1,0 +1,10 @@
+iron/iron
+BurntSushi/ripgrep
+uutils/coreutils
+rust-lang/rust-by-example
+hyperium/hyper
+rust-lang/cargo
+phildawes/racer
+carllerche/mio
+SergioBenitez/Rocket
+PistonDevelopers/piston

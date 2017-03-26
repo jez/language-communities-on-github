@@ -1,0 +1,10 @@
+pytorch/pytorch
+tweepy/tweepy
+RaRe-Technologies/gensim
+pyeve/eve
+ryanoasis/nerd-fonts
+falconry/falcon
+coleifer/peewee
+mwaskom/seaborn
+sloria/TextBlob
+amoffat/sh

@@ -1,0 +1,10 @@
+luruke/barba.js
+MoOx/postcss-cssnext
+mholt/PapaParse
+aheckmann/gm
+OwlCarousel2/OwlCarousel2
+happyworm/jPlayer
+FormidableLabs/victory
+PrismJS/prism
+tgriesser/bookshelf
+reactjs/react-rails
