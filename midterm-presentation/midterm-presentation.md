@@ -30,7 +30,14 @@ header-includes:
 
 # Key Findings from Existing Research
 
-TODO!
+- Interactions between core and new members differed from
+  interactions among core members.
+- Discussions tended to involve core and peripheral
+  developers, not just core developers.
+- Prior interaction increases likelihood of pull request
+  acceptance
+- Developers with higher stakes in the project are more
+  likely to engage in discussions
 
 # Our question:
 
