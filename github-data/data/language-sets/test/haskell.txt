@@ -1,0 +1,10 @@
+elm-lang/elm-compiler
+purescript/purescript
+facebook/Haxl
+commercialhaskell/stack
+yesodweb/yesod
+sdiehl/write-you-a-haskell
+idris-lang/Idris-dev
+ghcjs/ghcjs
+jaspervdj/hakyll
+gibiansky/IHaskell
