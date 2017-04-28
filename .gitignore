@@ -6,4 +6,5 @@ tags
 .env
 
 # Large generated files
-github-data/data/reactions/pages/
+github-data/data/reactions/
+github-data/data/languages/
