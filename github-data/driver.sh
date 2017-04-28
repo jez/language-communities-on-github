@@ -44,10 +44,22 @@ in_green() {
 }
 # -------------------
 
-repo_reactions_url() {
+repo_issues_url() {
+  local repo="$1"
+  local page="${2:-1}"
+  echo "repos/$repo/issues?state=all&client_id=$CLIENT_ID&client_secret=$CLIENT_SECRET&per_page=100&page=$page"
+}
+
+repo_issue_comments_url() {
   local repo="$1"
   local page="${2:-1}"
   echo "repos/$repo/issues/comments?client_id=$CLIENT_ID&client_secret=$CLIENT_SECRET&per_page=100&page=$page"
+}
+
+repo_pull_comments_url() {
+  local repo="$1"
+  local page="${2:-1}"
+  echo "repos/$repo/pulls/comments?client_id=$CLIENT_ID&client_secret=$CLIENT_SECRET&per_page=100&page=$page"
 }
 
 rate_limit_url() {
@@ -83,6 +95,39 @@ CREATE TABLE IF NOT EXISTS reactions (
 EOF
 }
 
+create_threads_table() {
+  sqlite3 "$DATABASE" << EOF
+CREATE TABLE IF NOT EXISTS threads (
+  language TEXT,
+  repo TEXT,
+  num_comments DECIMAL
+);
+EOF
+}
+
+create_unigrams_table() {
+  sqlite3 "$DATABASE" << EOF
+CREATE TABLE IF NOT EXISTS unigrams (
+  language TEXT,
+  repo TEXT,
+  unigram TEXT
+);
+EOF
+}
+
+get_last_page() {
+  local url="$1"
+
+  # Get how many pages there are total so we can paginate the results
+  local last_page
+  # If there's only one page, there's no 'Link:' header, but we don't want to fail
+  set +e
+  last_page="$(curl -s -I "$url" | select_link_header | extract_last_page)"
+  set -e
+  last_page="${last_page:-1}"
+  echo "$last_page"
+}
+
 fetch_reactions() {
   local language="$1"
   shift
@@ -105,16 +150,11 @@ fetch_reactions() {
     echo "    ...tempfile: $pagesjson"
 
     local url
-    url="$GITHUB_API/$(repo_reactions_url "$repo")"
+    url="$GITHUB_API/$(repo_issue_comments_url "$repo")"
     echo "    ...baseurl: $url"
 
-    # Get how many pages there are total so we can paginate the results
     local last_page
-    # If there's only one page, there's no 'Link:' header, but we don't want to fail
-    set +e
-    last_page="$(curl -s -I "$url" | select_link_header | extract_last_page)"
-    set -e
-    last_page="${last_page:-1}"
+    last_page="$(get_last_page "$url")"
     echo "    ...last_page: $last_page"
 
     # Make this empty before we append to it
@@ -122,7 +162,7 @@ fetch_reactions() {
     # Loop over all the pages, downloading each one
     local page_url
     for ((page=1; page<=last_page; page++)); do
-      page_url="$GITHUB_API/$(repo_reactions_url "$repo" "$page")"
+      page_url="$GITHUB_API/$(repo_issue_comments_url "$repo" "$page")"
 
       echo "    ...page_url: $page_url"
 
@@ -154,6 +194,120 @@ fetch_reactions() {
   # Import the CSV into SQLite
   create_reactions_table
   sqlite3 -csv "$DATABASE" <<< ".import $languagecsv reactions"
+}
+
+csvify_with_language_repo() {
+  local language="$1"
+  local repo="$2"
+
+  awk "{print \"$language,$repo,\" \$1 }"
+}
+
+language_words_csv() {
+  local language="$1"
+  local json_infile="$2"
+  local csv_outfile="$3"
+
+  ggrep -vxF -f stopwords.txt \
+    <(jq --raw-output '.[] | .body' "$json_infile" | \
+      sed -E -f tokenizer.sed | \
+      tr ' A-Z' '\na-z') | \
+    csvify_with_language_repo "$language" "$repo" > "$csv_outfile"
+}
+
+fetch_comments() {
+  local language="$1"
+  shift
+
+  create_threads_table
+  create_unigrams_table
+
+  # The first is for GNU mktemp, the second is for OS X
+  local temp_page_json
+  temp_page_json=$(mktemp 2> /dev/null || mktemp -t tmp)
+  echo "Temp json file: $temp_page_json"
+  local temp_page_csv
+  temp_page_csv=$(mktemp 2> /dev/null || mktemp -t tmp)
+  echo "Temp csv file: $temp_page_csv"
+
+  for repo in "$@"; do
+    echo "Fetching all comments for '$repo' ..." | in_white
+
+    # ----- Issues ------------------------------------------------------------
+    local url
+    url="$GITHUB_API/$(repo_issues_url "$repo")"
+    echo
+    echo "    ...all issues: $url"
+    local last_page
+    last_page="$(get_last_page "$url")"
+    echo "    ...last_page: $last_page"
+
+    # Loop over all the pages, processing each incrementally
+    for ((page=1; page<=last_page; page++)); do
+      page_url="$GITHUB_API/$(repo_issues_url "$repo" "$page")"
+
+      # We need to process the data twice, so let's cache the result
+      echo "        ...page_url: $page_url"
+      curl --silent --fail "$page_url" > "$temp_page_json"
+
+      # First: number of comments
+      jq --raw-output '.[] | .comments' "$temp_page_json" | \
+        csvify_with_language_repo "$language" "$repo" > "$temp_page_csv"
+
+      sqlite3 -csv "$DATABASE" <<< ".import $temp_page_csv threads"
+
+      # Second: description body
+      language_words_csv "$language" "$temp_page_json" "$temp_page_csv"
+
+      sqlite3 -csv "$DATABASE" <<< ".import $temp_page_csv unigrams"
+    done
+
+    # ----- Issue Comments ----------------------------------------------------
+    local url
+    url="$GITHUB_API/$(repo_issue_comments_url "$repo")"
+    echo
+    echo "    ...issue comments: $url"
+    local last_page
+    last_page="$(get_last_page "$url")"
+    echo "    ...last_page: $last_page"
+
+    for ((page=1; page<=last_page; page++)); do
+      page_url="$GITHUB_API/$(repo_issue_comments_url "$repo" "$page")"
+
+      echo "        ...page_url: $page_url"
+      curl --silent --fail "$page_url" > "$temp_page_json"
+
+      language_words_csv "$language" "$temp_page_json" "$temp_page_csv"
+
+      sqlite3 -csv "$DATABASE" <<< ".import $temp_page_csv unigrams"
+    done
+
+    # ----- Pull Comments -----------------------------------------------------
+    local url
+    url="$GITHUB_API/$(repo_pull_comments_url "$repo")"
+    echo
+    echo "    ...pull comments: $url"
+    local last_page
+    last_page="$(get_last_page "$url")"
+    echo "    ...last_page: $last_page"
+
+    for ((page=1; page<=last_page; page++)); do
+      page_url="$GITHUB_API/$(repo_pull_comments_url "$repo" "$page")"
+
+      echo "        ...page_url: $page_url"
+      curl --silent --fail "$page_url" > "$temp_page_json"
+
+      language_words_csv "$language" "$temp_page_json" "$temp_page_csv"
+
+      sqlite3 -csv "$DATABASE" <<< ".import $temp_page_csv unigrams"
+    done
+
+    echo "    ...done." | in_green
+    echo
+  done
+
+  rm "$temp_page_csv"
+  rm "$temp_page_json"
 }
 
 #| driver.sh - Utility for getting assorted data from GitHub
@@ -189,8 +343,27 @@ case "$command" in
         ;;
     esac
     ;;
+  comments)
+    shift
+    case "$1" in
+      --from-file)
+        shift
+        for language_file in "$LANGUAGES_DIR"/*.txt; do
+          __language="$(basename "$language_file" .txt)"
+          # We actually want word splitting
+          # shellcheck disable=SC2046
+          fetch_comments "$__language" $(xargs < "$language_file")
+        done
+        ;;
+      *)
+        fetch_comments "$@"
+        ;;
+    esac
+    ;;
   sql)
     create_reactions_table
+    create_threads_table
+    create_unigrams_table
     ;;
   ratelimit)
     curl --silent -I "$GITHUB_API/$(rate_limit_url)" | grep RateLimit
