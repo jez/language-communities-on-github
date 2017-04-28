@@ -22,7 +22,7 @@ Software development is an intensely social activity, though not in the
 conventional usage of the word (like "social networking sites"). In order to
 get things done, developers frequently collaborate with others, doing things
 like reporting bugs, discussing future changes, and reviewing code for quality.
-A common online platform where software development is GitHub. GitHub
+A common online platform where software development happens is GitHub. GitHub
 groups software development into source repositories, or "repos," which then
 belong to individual users or entire organizations.
 
