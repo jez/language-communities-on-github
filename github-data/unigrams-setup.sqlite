@@ -1,0 +1,41 @@
+.load '/usr/local/opt/sqlite/lib/libsqlitefunctions.dylib'
+
+CREATE TABLE IF NOT EXISTS unigrams (
+  language TEXT,
+  unigram TEXT,
+  count DECIMAL,
+  PRIMARY KEY (language, unigram)
+);
+
+CREATE VIEW IF NOT EXISTS unigrams__totals AS
+  select language, sum(count) as total
+  from unigrams
+  group by language;
+
+CREATE VIEW IF NOT EXISTS unigrams__tfs AS
+  select
+    u.language,
+    u.unigram,
+    (u.count * 1.0) / (t.total * 1.0) as freq
+  from unigrams u, unigrams__totals t
+  where u.language = t.language;
+
+-- This is not exactly tf-idf. By the book, tf-idf is (tf * idf).
+-- This over-values idf for our purposes: if a term occurs in all documents,
+-- it doesn't matter if it had a high term frequency.
+--
+-- Consider an example: all language communities might mention 'docker',
+-- but 'go' and 'c' might mention it more often. Should we exclude 'docker'
+-- from all results? Seems like no.
+--
+-- Below, I'm scaling the value before the log by 'e'. This scales the
+-- codomain of the idf output to be [1, \inf) instead of [0, \inf).
+-- TODO(jez) Look up if anyone has researched this before.
+
+CREATE VIEW IF NOT EXISTS unigrams__idfs AS
+  select
+    unigram,
+    log (2.71828 * (select count(distinct language) * 1.0 from unigrams)
+      / count(unigram)) as idf
+  from unigrams
+  group by unigram;

@@ -106,13 +106,7 @@ EOF
 }
 
 create_unigrams_table() {
-  sqlite3 "$DATABASE" << EOF
-CREATE TABLE IF NOT EXISTS unigrams (
-  language TEXT,
-  repo TEXT,
-  unigram TEXT
-);
-EOF
+  sqlite3 "$DATABASE" < unigrams-setup.sqlite
 }
 
 get_last_page() {
@@ -122,7 +116,7 @@ get_last_page() {
   local last_page
   # If there's only one page, there's no 'Link:' header, but we don't want to fail
   set +e
-  last_page="$(curl -s -I "$url" | select_link_header | extract_last_page)"
+  last_page="$(curl -L -s -I "$url" | select_link_header | extract_last_page)"
   set -e
   last_page="${last_page:-1}"
   echo "$last_page"
@@ -167,7 +161,7 @@ fetch_reactions() {
       echo "    ...page_url: $page_url"
 
       # Make request to GitHub API for current page
-      curl --silent --fail -H "Accept: $ACCEPT_REACTIONS_BETA" "$page_url" | \
+      curl -L --silent --fail -H "Accept: $ACCEPT_REACTIONS_BETA" "$page_url" | \
         # Massage the raw response into just what we want
         jq --from-file reactions-github-reponse.jq | \
           # Accumulate a sum for each property
@@ -248,7 +242,7 @@ fetch_comments() {
 
       # We need to process the data twice, so let's cache the result
       echo "        ...page_url: $page_url"
-      curl --silent --fail "$page_url" > "$temp_page_json"
+      curl -L --silent --fail "$page_url" > "$temp_page_json"
 
       # First: number of comments
       jq --raw-output '.[] | .comments' "$temp_page_json" | \
@@ -275,7 +269,7 @@ fetch_comments() {
       page_url="$GITHUB_API/$(repo_issue_comments_url "$repo" "$page")"
 
       echo "        ...page_url: $page_url"
-      curl --silent --fail "$page_url" > "$temp_page_json"
+      curl -L --silent --fail "$page_url" > "$temp_page_json"
 
       language_words_csv "$language" "$temp_page_json" "$temp_page_csv"
 
@@ -295,7 +289,7 @@ fetch_comments() {
       page_url="$GITHUB_API/$(repo_pull_comments_url "$repo" "$page")"
 
       echo "        ...page_url: $page_url"
-      curl --silent --fail "$page_url" > "$temp_page_json"
+      curl -L --silent --fail "$page_url" > "$temp_page_json"
 
       language_words_csv "$language" "$temp_page_json" "$temp_page_csv"
 
@@ -366,7 +360,7 @@ case "$command" in
     create_unigrams_table
     ;;
   ratelimit)
-    curl --silent -I "$GITHUB_API/$(rate_limit_url)" | grep RateLimit
+    curl -L --silent -I "$GITHUB_API/$(rate_limit_url)" | grep RateLimit
     ;;
   clean)
     # TODO(jez)
