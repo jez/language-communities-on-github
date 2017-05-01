@@ -28,7 +28,7 @@ We're getting data from the GitHub API.
   - SQLite database to play around with our data
 - [driver.sh](github-data/driver.sh)
   - Use our data pipeline to get new or more data for yourself
-  - Requires `bash`, `curl`, `jq`, and `sqlite3`
+  - Requires `bash`, `curl`, GNU `grep`, `jq`, and `sqlite3`
 
 To randomly sample repos for this project, we used this query on GitHub Search:
 
