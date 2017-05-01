@@ -1,0 +1,12 @@
+.mode csv
+.headers on
+.load '/usr/local/opt/sqlite/lib/libsqlitefunctions.dylib'
+
+select
+  language,
+  avg(num_comments) as mean,
+  median(num_comments) as median,
+  stdev(num_comments) as stddev
+from threads
+group by language
+order by mean desc;

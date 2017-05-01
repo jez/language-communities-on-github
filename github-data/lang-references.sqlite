@@ -1,0 +1,12 @@
+.mode csv
+.headers on
+
+select
+  language as referrer,
+  unigram as refers_to,
+  count
+from unigrams
+where unigram in (select * from all_langs)
+  and unigram != language
+  and not (language = 'c-sharp' and unigram = 'c#')
+order by language, count desc;

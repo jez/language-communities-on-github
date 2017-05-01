@@ -1,0 +1,146 @@
+.mode csv
+.load '/usr/local/opt/sqlite/lib/libsqlitefunctions.dylib'
+
+.headers on
+
+select
+  TF.language       as language,
+  TF.unigram        as unigram,
+  TF.freq           as tf,
+  IDF.idf           as idf,
+  TF.freq * IDF.idf as tfidf
+from
+  unigrams__tfs TF,
+  unigrams__idfs IDF
+where TF.unigram == IDF.unigram
+  and language = 'c'
+order by tfidf desc
+limit 100;
+
+.headers off
+
+select
+  TF.language       as language,
+  TF.unigram        as unigram,
+  TF.freq           as tf,
+  IDF.idf           as idf,
+  TF.freq * IDF.idf as tfidf
+from
+  unigrams__tfs TF,
+  unigrams__idfs IDF
+where TF.unigram == IDF.unigram
+  and language = 'c-sharp'
+order by tfidf desc
+limit 100;
+
+select
+  TF.language       as language,
+  TF.unigram        as unigram,
+  TF.freq           as tf,
+  IDF.idf           as idf,
+  TF.freq * IDF.idf as tfidf
+from
+  unigrams__tfs TF,
+  unigrams__idfs IDF
+where TF.unigram == IDF.unigram
+  and language = 'go'
+order by tfidf desc
+limit 100;
+
+select
+  TF.language       as language,
+  TF.unigram        as unigram,
+  TF.freq           as tf,
+  IDF.idf           as idf,
+  TF.freq * IDF.idf as tfidf
+from
+  unigrams__tfs TF,
+  unigrams__idfs IDF
+where TF.unigram == IDF.unigram
+  and language = 'haskell'
+order by tfidf desc
+limit 100;
+
+select
+  TF.language       as language,
+  TF.unigram        as unigram,
+  TF.freq           as tf,
+  IDF.idf           as idf,
+  TF.freq * IDF.idf as tfidf
+from
+  unigrams__tfs TF,
+  unigrams__idfs IDF
+where TF.unigram == IDF.unigram
+  and language = 'java'
+order by tfidf desc
+limit 100;
+
+select
+  TF.language       as language,
+  TF.unigram        as unigram,
+  TF.freq           as tf,
+  IDF.idf           as idf,
+  TF.freq * IDF.idf as tfidf
+from
+  unigrams__tfs TF,
+  unigrams__idfs IDF
+where TF.unigram == IDF.unigram
+  and language = 'javascript'
+order by tfidf desc
+limit 100;
+
+select
+  TF.language       as language,
+  TF.unigram        as unigram,
+  TF.freq           as tf,
+  IDF.idf           as idf,
+  TF.freq * IDF.idf as tfidf
+from
+  unigrams__tfs TF,
+  unigrams__idfs IDF
+where TF.unigram == IDF.unigram
+  and language = 'python'
+order by tfidf desc
+limit 100;
+
+select
+  TF.language       as language,
+  TF.unigram        as unigram,
+  TF.freq           as tf,
+  IDF.idf           as idf,
+  TF.freq * IDF.idf as tfidf
+from
+  unigrams__tfs TF,
+  unigrams__idfs IDF
+where TF.unigram == IDF.unigram
+  and language = 'ruby'
+order by tfidf desc
+limit 100;
+
+select
+  TF.language       as language,
+  TF.unigram        as unigram,
+  TF.freq           as tf,
+  IDF.idf           as idf,
+  TF.freq * IDF.idf as tfidf
+from
+  unigrams__tfs TF,
+  unigrams__idfs IDF
+where TF.unigram == IDF.unigram
+  and language = 'rust'
+order by tfidf desc
+limit 100;
+
+select
+  TF.language       as language,
+  TF.unigram        as unigram,
+  TF.freq           as tf,
+  IDF.idf           as idf,
+  TF.freq * IDF.idf as tfidf
+from
+  unigrams__tfs TF,
+  unigrams__idfs IDF
+where TF.unigram == IDF.unigram
+  and language = 'swift'
+order by tfidf desc
+limit 100;

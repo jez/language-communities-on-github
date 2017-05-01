@@ -1,0 +1,13 @@
+.mode csv
+.headers on
+select * from unigrams__tfs where language = 'c'          order by freq desc limit 100;
+.headers off
+select * from unigrams__tfs where language = 'c-sharp'    order by freq desc limit 100;
+select * from unigrams__tfs where language = 'go'         order by freq desc limit 100;
+select * from unigrams__tfs where language = 'haskell'    order by freq desc limit 100;
+select * from unigrams__tfs where language = 'java'       order by freq desc limit 100;
+select * from unigrams__tfs where language = 'javascript' order by freq desc limit 100;
+select * from unigrams__tfs where language = 'python'     order by freq desc limit 100;
+select * from unigrams__tfs where language = 'ruby'       order by freq desc limit 100;
+select * from unigrams__tfs where language = 'rust'       order by freq desc limit 100;
+select * from unigrams__tfs where language = 'swift'      order by freq desc limit 100;
