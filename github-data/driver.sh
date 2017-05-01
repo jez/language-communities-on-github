@@ -245,7 +245,7 @@ fetch_comments() {
     echo "    ...last_page: $last_page"
 
     # Loop over all the pages, processing each incrementally
-    for ((page=1; page<=last_page; page++)); do
+    for ((page=1; page<=last_page && page<=3; page++)); do
       page_url="$GITHUB_API/$(repo_issues_url "$repo" "$page")"
 
       # We need to process the data twice, so let's cache the result
@@ -272,7 +272,7 @@ fetch_comments() {
     last_page="$(get_last_page "$url")"
     echo "    ...last_page: $last_page"
 
-    for ((page=1; page<=last_page; page++)); do
+    for ((page=1; page<=last_page && page<=3; page++)); do
       page_url="$GITHUB_API/$(repo_issue_comments_url "$repo" "$page")"
 
       echo "        ...page_url: $page_url"
@@ -291,7 +291,7 @@ fetch_comments() {
     last_page="$(get_last_page "$url")"
     echo "    ...last_page: $last_page"
 
-    for ((page=1; page<=last_page; page++)); do
+    for ((page=1; page<=last_page && page<=3; page++)); do
       page_url="$GITHUB_API/$(repo_pull_comments_url "$repo" "$page")"
 
       echo "        ...page_url: $page_url"
