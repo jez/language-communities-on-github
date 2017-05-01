@@ -197,16 +197,24 @@ csvify_with_language_repo() {
   awk "{print \"$language,$repo,\" \$1 }"
 }
 
-language_words_csv() {
+sqlify_with_language() {
+  local language="$1"
+
+  awk "{
+    print \"INSERT OR IGNORE INTO unigrams VALUES ('$language', '\" \$1 \"', 0);\"
+    print \"UPDATE unigrams SET count = count + 1 WHERE language = '$language' AND unigram = '\" \$1 \"';\"
+  }"
+}
+
+language_words_sql() {
   local language="$1"
   local json_infile="$2"
-  local csv_outfile="$3"
 
   ggrep -vxF -f stopwords.txt \
     <(jq --raw-output '.[] | .body' "$json_infile" | \
       sed -E -f tokenizer.sed | \
       tr ' A-Z' '\na-z') | \
-    csvify_with_language_repo "$language" "$repo" > "$csv_outfile"
+    sqlify_with_language "$language"
 }
 
 fetch_comments() {
@@ -251,9 +259,8 @@ fetch_comments() {
       sqlite3 -csv "$DATABASE" <<< ".import $temp_page_csv threads"
 
       # Second: description body
-      language_words_csv "$language" "$temp_page_json" "$temp_page_csv"
-
-      sqlite3 -csv "$DATABASE" <<< ".import $temp_page_csv unigrams"
+      language_words_sql "$language" "$temp_page_json" | \
+        sqlite3 -csv "$DATABASE"
     done
 
     # ----- Issue Comments ----------------------------------------------------
@@ -271,9 +278,8 @@ fetch_comments() {
       echo "        ...page_url: $page_url"
       curl -L --silent --fail "$page_url" > "$temp_page_json"
 
-      language_words_csv "$language" "$temp_page_json" "$temp_page_csv"
-
-      sqlite3 -csv "$DATABASE" <<< ".import $temp_page_csv unigrams"
+      language_words_sql "$language" "$temp_page_json" | \
+        sqlite3 -csv "$DATABASE"
     done
 
     # ----- Pull Comments -----------------------------------------------------
@@ -291,9 +297,8 @@ fetch_comments() {
       echo "        ...page_url: $page_url"
       curl -L --silent --fail "$page_url" > "$temp_page_json"
 
-      language_words_csv "$language" "$temp_page_json" "$temp_page_csv"
-
-      sqlite3 -csv "$DATABASE" <<< ".import $temp_page_csv unigrams"
+      language_words_sql "$language" "$temp_page_json" | \
+        sqlite3 -csv "$DATABASE"
     done
 
     echo "    ...done." | in_green
